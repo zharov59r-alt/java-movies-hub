@@ -63,21 +63,10 @@ public class MoviesHandler extends BaseHttpHandler {
         Optional<Movie> movieOpt = parseMovie(exchange.getRequestBody());
 
 
-        Optional<Integer> idOpt = MovieUtil.getInteger(exchange.getRequestURI().getPath().split("/")[2]);
-        if (idOpt.isEmpty()) {
-            sendJson(exchange, 400, (new Gson()).toJson(new ErrorResponse("Некорректный ID")));
-            return;
-        }
-        Movie movie = moviesStore.findById(idOpt.get());
-        if (movie == null) {
-            sendJson(exchange, 404, (new Gson()).toJson(new ErrorResponse("Фильм не найден")));
-            return;
-        }
-        sendJson(exchange, 200, (new Gson()).toJson(movie));
     }
 
     private Optional<Movie> parseMovie(InputStream bodyInputStream) throws IOException {
-        String body = new String(body.readAllBytes(), Config.DEFAULT_CHARSET);
+        String body = new String(bodyInputStream.readAllBytes(), Config.DEFAULT_CHARSET);
 
 
 
