@@ -4,7 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
-import ru.practicum.moviehub.config.Config;
+import ru.practicum.moviehub.constant.Constant;
 import ru.practicum.moviehub.model.Movie;
 
 import java.io.IOException;
@@ -37,10 +37,10 @@ public class MovieUtil {
                 String value = null;
 
                 if (param.length > 0) {
-                    key = URLDecoder.decode(param[0], Config.DEFAULT_CHARSET);
+                    key = URLDecoder.decode(param[0], Constant.DEFAULT_CHARSET);
                 }
                 if (param.length > 1) {
-                    value = URLDecoder.decode(param[1], Config.DEFAULT_CHARSET);
+                    value = URLDecoder.decode(param[1], Constant.DEFAULT_CHARSET);
                 }
 
                 if (key != null) {
@@ -52,15 +52,15 @@ public class MovieUtil {
     }
 
 
-    public static Optional<Movie> parseMovie(InputStream bodyInputStream) throws IOException {
-        String body = new String(bodyInputStream.readAllBytes(), Config.DEFAULT_CHARSET);
+    public static Optional<Movie> parseMovie(InputStream bodyInputStream, Gson gson) throws IOException {
+        String body = new String(bodyInputStream.readAllBytes(), Constant.DEFAULT_CHARSET);
 
         JsonElement jsonElement = JsonParser.parseString(body);
         if (!jsonElement.isJsonObject()) {
             return Optional.empty();
         }
 
-        Movie movie = (new Gson()).fromJson(body, Movie.class);
+        Movie movie = gson.fromJson(body, Movie.class);
         return Optional.of(movie);
 
     }

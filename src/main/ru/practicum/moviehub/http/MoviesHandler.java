@@ -3,6 +3,7 @@ package ru.practicum.moviehub.http;
 import com.google.gson.*;
 import com.sun.net.httpserver.HttpExchange;
 import ru.practicum.moviehub.api.ErrorResponse;
+import ru.practicum.moviehub.constant.Constant;
 import ru.practicum.moviehub.model.Movie;
 import ru.practicum.moviehub.store.MoviesStore;
 import ru.practicum.moviehub.util.MovieUtil;
@@ -58,14 +59,14 @@ public class MoviesHandler extends BaseHttpHandler {
     private void handlePostMovie(HttpExchange exchange) throws IOException {
 
         List<String> contentTypeValues = exchange.getRequestHeaders().get("Content-Type");
-        if (contentTypeValues == null || contentTypeValues.isEmpty() || !contentTypeValues.contains("application/json; charset=UTF-8")) {
+        if (contentTypeValues == null || contentTypeValues.isEmpty() || !contentTypeValues.contains(Constant.CT_JSON)) {
             sendNoContent(exchange, 415);
             return;
         }
 
-        Optional<Movie> movieOpt = MovieUtil.parseMovie(exchange.getRequestBody());
+        Optional<Movie> movieOpt = MovieUtil.parseMovie(exchange.getRequestBody(), gson);
         if (movieOpt.isEmpty()) {
-            sendJson(exchange, 422, gson.toJson(new ErrorResponse("Некорректный JSON")));
+            sendJson(exchange, 400, gson.toJson(new ErrorResponse("Невалидный JSON")));
             return;
         }
 
