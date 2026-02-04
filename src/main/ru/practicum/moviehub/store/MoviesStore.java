@@ -9,17 +9,17 @@ public class MoviesStore {
     private Map<Integer, Movie> store = new HashMap<>();
     private Integer sequence = 1;
 
-    public int addMovie(String title, int year) {
+    public void saveMovie(Movie movie) {
         int id = sequence++;
-        store.put(id, new Movie(title, year));
-        return id;
+        movie.setId(id);
+        store.put(id, movie);
     }
 
     public void deleteById(Integer id) {
         store.remove(id);
     }
 
-    public Collection<Movie> findAdd() {
+    public Collection<Movie> findAll() {
         return store.values();
     }
 
@@ -32,7 +32,7 @@ public class MoviesStore {
         List<Movie> movies = new ArrayList<>();
 
         for (Movie movie: store.values())
-            if (movie.getYear() == year)
+            if (Objects.equals(movie.getYear(), year))
                 movies.add(movie);
 
         return movies;

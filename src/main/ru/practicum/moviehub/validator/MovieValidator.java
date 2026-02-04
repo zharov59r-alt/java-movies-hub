@@ -13,13 +13,14 @@ public class MovieValidator {
 
         List<String> errors = new ArrayList<>();
 
-        if (movie.getTitle() == null)
+        if (movie.getTitle() == null || movie.getTitle().isEmpty())
             errors.add("название не должно быть пустым");
-
-        if (movie.getTitle().length() > 100)
+        else if (movie.getTitle().length() > 100)
             errors.add("название не должно превышать 100 символов");
 
-        if (movie.getYear() > 1888 && LocalDate.now().getYear() + 1 > movie.getYear())
+        if (movie.getYear() == null)
+            errors.add("год не должен быть пустым");
+        else if ( 1888 > movie.getYear() || movie.getYear() > LocalDate.now().getYear() + 1 )
             errors.add("год должен быть между 1888 и 2026");
 
         if (errors.isEmpty())

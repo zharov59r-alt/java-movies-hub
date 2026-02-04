@@ -1,11 +1,16 @@
 package ru.practicum.moviehub.util;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParser;
 import com.sun.net.httpserver.HttpExchange;
 import ru.practicum.moviehub.config.Config;
+import ru.practicum.moviehub.model.Movie;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class MovieUtil {
@@ -45,5 +50,20 @@ public class MovieUtil {
         }
         return parameters;
     }
+
+
+    public static Optional<Movie> parseMovie(InputStream bodyInputStream) throws IOException {
+        String body = new String(bodyInputStream.readAllBytes(), Config.DEFAULT_CHARSET);
+
+        JsonElement jsonElement = JsonParser.parseString(body);
+        if(!jsonElement.isJsonObject()) {
+            return Optional.empty();
+        }
+
+        Movie movie = (new Gson()).fromJson(body, Movie.class);
+        return Optional.of(movie);
+
+    }
+
 }
 

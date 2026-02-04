@@ -5,8 +5,6 @@ import com.sun.net.httpserver.HttpHandler;
 import ru.practicum.moviehub.config.Config;
 
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
 public abstract class BaseHttpHandler implements HttpHandler {
 

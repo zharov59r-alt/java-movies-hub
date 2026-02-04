@@ -3,27 +3,24 @@ package ru.practicum.moviehub.http;
 import com.google.gson.*;
 import com.sun.net.httpserver.HttpExchange;
 import ru.practicum.moviehub.api.ErrorResponse;
-import ru.practicum.moviehub.config.Config;
 import ru.practicum.moviehub.model.Movie;
 import ru.practicum.moviehub.store.MoviesStore;
 import ru.practicum.moviehub.util.MovieUtil;
+import ru.practicum.moviehub.validator.MovieValidator;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 public class MoviesHandler extends BaseHttpHandler {
 
     private final MoviesStore moviesStore;
+    private final Gson gson;
 
     public MoviesHandler(MoviesStore moviesStore) {
+        this.gson = new Gson();
         this.moviesStore = moviesStore;
     }
 
@@ -60,24 +57,28 @@ public class MoviesHandler extends BaseHttpHandler {
 
     private void handlePostMovie(HttpExchange exchange) throws IOException {
 
-        Optional<Movie> movieOpt = parseMovie(exchange.getRequestBody());
-
-
-    }
-
-    private Optional<Movie> parseMovie(InputStream bodyInputStream) throws IOException {
-        String body = new String(bodyInputStream.readAllBytes(), Config.DEFAULT_CHARSET);
-
-
-
-        JsonElement jsonElement = JsonParser.parseString(body);
-        if(!jsonElement.isJsonObject()) {
-            return Optional.empty();
+        List<String> contentTypeValues = exchange.getRequestHeaders().get("Content-Type");
+        if (contentTypeValues == null || contentTypeValues.isEmpty() || !contentTypeValues.contains("application/json; charset=UTF-8")) {
+            sendNoContent(exchange, 415);
+            return;
         }
 
+        Optional<Movie> movieOpt = MovieUtil.parseMovie(exchange.getRequestBody());
+        if (movieOpt.isEmpty()) {
+            sendJson(exchange, 422, gson.toJson(new ErrorResponse("Некорректный JSON")));
+            return;
+        }
 
-        Movie movie = (new Gson).fromJson(body, Movie.class);
-        assertEquals("Second", movie.getTitle(), "Найден не тот фильм");
+        Movie movie = movieOpt.get();
+        Optional<List<String>> valid = MovieValidator.checkMovie(movie);
+
+        if (valid.isPresent()) {
+            sendJson(exchange, 422, gson.toJson(new ErrorResponse("Ошибка валидации", valid.get())));
+            return;
+        }
+
+        moviesStore.saveMovie(movie);
+        sendJson(exchange, 201, gson.toJson(movie));
 
     }
 
@@ -85,12 +86,12 @@ public class MoviesHandler extends BaseHttpHandler {
     private void handleDeleteMovieById(HttpExchange exchange) throws IOException {
         Optional<Integer> idOpt = MovieUtil.getInteger(exchange.getRequestURI().getPath().split("/")[2]);
         if (idOpt.isEmpty()) {
-            sendJson(exchange, 400, (new Gson()).toJson(new ErrorResponse("Некорректный ID")));
+            sendJson(exchange, 400, gson.toJson(new ErrorResponse("Некорректный ID")));
             return;
         }
         Movie movie = moviesStore.findById(idOpt.get());
         if (movie == null) {
-            sendJson(exchange, 404, (new Gson()).toJson(new ErrorResponse("Фильм не найден")));
+            sendJson(exchange, 404, gson.toJson(new ErrorResponse("Фильм не найден")));
             return;
         }
         moviesStore.deleteById(idOpt.get());
@@ -100,15 +101,15 @@ public class MoviesHandler extends BaseHttpHandler {
     private void handleGetMoviesById(HttpExchange exchange) throws IOException {
         Optional<Integer> idOpt = MovieUtil.getInteger(exchange.getRequestURI().getPath().split("/")[2]);
         if (idOpt.isEmpty()) {
-            sendJson(exchange, 400, (new Gson()).toJson(new ErrorResponse("Некорректный ID")));
+            sendJson(exchange, 400, gson.toJson(new ErrorResponse("Некорректный ID")));
             return;
         }
         Movie movie = moviesStore.findById(idOpt.get());
         if (movie == null) {
-            sendJson(exchange, 404, (new Gson()).toJson(new ErrorResponse("Фильм не найден")));
+            sendJson(exchange, 404, gson.toJson(new ErrorResponse("Фильм не найден")));
             return;
         }
-        sendJson(exchange, 200, (new Gson()).toJson(movie));
+        sendJson(exchange, 200, gson.toJson(movie));
     }
 
     private void handleGetMoviesByYear(HttpExchange exchange) throws IOException {
@@ -116,21 +117,21 @@ public class MoviesHandler extends BaseHttpHandler {
         Map<String, String> params = MovieUtil.parseQueryParams(exchange);
 
         if (!params.containsKey("year")) {
-            sendJson(exchange, 400, (new Gson()).toJson(new ErrorResponse("Некорректный параметр запроса — 'year'")));
+            sendJson(exchange, 400, gson.toJson(new ErrorResponse("Некорректный параметр запроса — 'year'")));
             return;
         }
 
         Optional<Integer> yearOpt = MovieUtil.getInteger(params.get("year"));
         if (yearOpt.isEmpty()) {
-            sendJson(exchange, 400, (new Gson()).toJson(new ErrorResponse("Некорректный параметр запроса — 'year'")));
+            sendJson(exchange, 400, gson.toJson(new ErrorResponse("Некорректный параметр запроса — 'year'")));
             return;
         }
 
-        sendJson(exchange, 200, (new Gson()).toJson(moviesStore.findByYear(yearOpt.get())));
+        sendJson(exchange, 200, gson.toJson(moviesStore.findByYear(yearOpt.get())));
     }
 
     private void handleGetMoviesAll(HttpExchange exchange) throws IOException {
-        sendJson(exchange, 200, (new Gson()).toJson(moviesStore.findAdd()));
+        sendJson(exchange, 200, gson.toJson(moviesStore.findAll()));
     }
 
     private Endpoint getEndpoint(URI requestURI, String requestMethod) {

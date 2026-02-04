@@ -35,9 +35,9 @@ public class GetMoviesByYearTest extends MoviesApiTest {
     @Test
     void returnsData() throws Exception {
 
-        moviesStore.addMovie("First", 2000);
-        moviesStore.addMovie("Second", 2001);
-        moviesStore.addMovie("Third", 2000);
+        moviesStore.saveMovie(new Movie("First", 2000));
+        moviesStore.saveMovie(new Movie("Second", 2001));
+        moviesStore.saveMovie(new Movie("Third", 2000));
 
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(BASE + "/movies?year=2005")).GET().build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
@@ -56,9 +56,9 @@ public class GetMoviesByYearTest extends MoviesApiTest {
     @Test
     void returnsNotEmptyArray() throws Exception {
 
-        moviesStore.addMovie("First", 2000);
-        moviesStore.addMovie("Second", 2001);
-        moviesStore.addMovie("Third", 2000);
+        moviesStore.saveMovie(new Movie("First", 2000));
+        moviesStore.saveMovie(new Movie("Second", 2001));
+        moviesStore.saveMovie(new Movie("Third", 2000));
 
         HttpRequest request = HttpRequest.newBuilder().uri(URI.create(BASE + "/movies?year=2000")).GET().build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
