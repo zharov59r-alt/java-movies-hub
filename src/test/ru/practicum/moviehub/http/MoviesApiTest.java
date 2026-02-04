@@ -2,18 +2,13 @@ package ru.practicum.moviehub.http;
 
 import com.google.gson.*;
 import org.junit.jupiter.api.*;
-import ru.practicum.moviehub.model.Movie;
 import ru.practicum.moviehub.store.MoviesStore;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-import java.net.URI;
 import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
 import java.time.Duration;
-import java.util.List;
 
 
 public class MoviesApiTest {
