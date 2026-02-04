@@ -56,7 +56,7 @@ public class MovieUtil {
         String body = new String(bodyInputStream.readAllBytes(), Config.DEFAULT_CHARSET);
 
         JsonElement jsonElement = JsonParser.parseString(body);
-        if(!jsonElement.isJsonObject()) {
+        if (!jsonElement.isJsonObject()) {
             return Optional.empty();
         }
 
