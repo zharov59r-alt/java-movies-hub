@@ -20,7 +20,7 @@ public class MovieValidator {
 
         if (movie.getYear() == null)
             errors.add("год не должен быть пустым");
-        else if ( 1888 > movie.getYear() || movie.getYear() > LocalDate.now().getYear() + 1 )
+        else if (1888 > movie.getYear() || movie.getYear() > LocalDate.now().getYear() + 1)
             errors.add("год должен быть между 1888 и 2026");
 
         if (errors.isEmpty())
